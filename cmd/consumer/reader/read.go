@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/consumer-match-delete/internal/consumer/model"
-	dbm "github.com/consumer-match-delete/internal/db/model"
+	"github.com/superhero-match/consumer-match-delete/internal/consumer/model"
+	dbm "github.com/superhero-match/consumer-match-delete/internal/db/model"
 )
 
 const (

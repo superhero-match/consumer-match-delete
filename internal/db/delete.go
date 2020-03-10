@@ -14,7 +14,7 @@
 package db
 
 import (
-	"github.com/consumer-match-delete/internal/db/model"
+	"github.com/superhero-match/consumer-match-delete/internal/db/model"
 )
 
 // DeleteMatch marks a match as deleted in DB.
