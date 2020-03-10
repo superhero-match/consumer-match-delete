@@ -8,4 +8,3 @@ db:
 consumer:
   brokers: ['192.168.178.17:9092']
   topic: 'delete.match.match'
-  group_id: 'consumer-match-delete-group'
