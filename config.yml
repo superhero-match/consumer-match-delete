@@ -5,6 +5,21 @@ db:
   password: 'Kolian18**'
   name: 'match'
 
+cache:
+  address: '192.168.0.105'
+  port: ':6379'
+  password: 'Awesome85**'
+  db: 0
+  pool_size: 25
+  minimum_idle_connections: 10
+  maximum_retries: 1
+  token_key_format: 'token.%s'
+
 consumer:
-  brokers: ['192.168.178.17:9092']
+  brokers: ['192.168.0.105:9092']
   topic: 'delete.match.match'
+  group_id: 'consumer-delete-match-group'
+
+firebase:
+  function_address: 'https://us-central1-superheromatch.cloudfunctions.net/deleteMatch'
+  content_type: 'application/json'

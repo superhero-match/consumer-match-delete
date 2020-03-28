@@ -21,6 +21,7 @@ import (
 
 	"github.com/superhero-match/consumer-match-delete/internal/consumer/model"
 	dbm "github.com/superhero-match/consumer-match-delete/internal/db/model"
+	fm "github.com/superhero-match/consumer-match-delete/internal/firebase/model"
 )
 
 const (
@@ -33,9 +34,11 @@ func (r *Reader) Read() error {
 	ctx := context.Background()
 
 	for {
-		fmt.Print("before FetchMessage")
+		fmt.Println("before FetchMessage")
 		m, err := r.Consumer.Consumer.FetchMessage(ctx)
-		fmt.Print("after FetchMessage")
+		fmt.Println("after FetchMessage")
+		fmt.Println("err: ")
+		fmt.Println(err)
 		if err != nil {
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
@@ -71,12 +74,43 @@ func (r *Reader) Read() error {
 		}
 
 		err = r.DB.DeleteMatch(dbm.Match{
-			ID:        match.ID,
-			DeletedAt: time.Now().UTC().Format(timeFormat),
+			SuperheroID:        match.SuperheroID,
+			MatchedSuperheroID: match.MatchedSuperheroID,
+			DeletedAt:          time.Now().UTC().Format(timeFormat),
 		}, )
 		if err != nil {
 			fmt.Println("DB")
 			fmt.Println(err)
+			err = r.Consumer.Consumer.Close()
+			if err != nil {
+				return err
+			}
+
+			return err
+		}
+
+		token, err := r.Cache.GetFirebaseMessagingToken(fmt.Sprintf(r.Cache.TokenKeyFormat, match.MatchedSuperheroID))
+		if err != nil || token == nil {
+			fmt.Println("r.Cache.GetFirebaseMessagingToken")
+			fmt.Println(err)
+			fmt.Println(token)
+
+			err = r.Consumer.Consumer.Close()
+			if err != nil {
+				return err
+			}
+
+			return err
+		}
+
+		err = r.Firebase.PushDeleteMatchNotification(fm.Request{
+			Token:       token.Token,
+			SuperheroID: match.SuperheroID,
+		})
+		if err != nil {
+			fmt.Println("r.Firebase.PushNewMatchNotification")
+			fmt.Println(err)
+
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
 				return err

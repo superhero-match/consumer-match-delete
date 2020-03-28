@@ -11,27 +11,22 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package config
+package firebase
 
 import (
-	"github.com/jinzhu/configor"
+	"github.com/superhero-match/consumer-match-delete/internal/config"
 )
 
-// Config holds the configuration.
-type Config struct {
-	Consumer *Consumer
-	Cache    *Cache
-	Firebase *Firebase
-	DB       *DB
+// Firebase holds all the Firebase related data.
+type Firebase struct {
+	FunctionAddress string
+	ContentType     string
 }
 
-// NewConfig returns the configuration.
-func NewConfig() (cnf *Config, e error) {
-	var cfg Config
-
-	if err := configor.Load(&cfg, "config.yml"); err != nil {
-		return nil, err
+// NewFirebase creates new value of type Firebase.
+func NewFirebase(cfg *config.Config) *Firebase {
+	return &Firebase{
+		FunctionAddress: cfg.Firebase.FunctionAddress,
+		ContentType:     cfg.Firebase.ContentType,
 	}
-
-	return &cfg, nil
 }
