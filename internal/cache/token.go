@@ -11,27 +11,29 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package config
+package cache
 
 import (
-	"github.com/jinzhu/configor"
+	"github.com/go-redis/redis"
+	"github.com/superhero-match/consumer-match-delete/internal/cache/model"
 )
 
-// Config holds the configuration.
-type Config struct {
-	Consumer *Consumer
-	Cache    *Cache
-	Firebase *Firebase
-	DB       *DB
-}
-
-// NewConfig returns the configuration.
-func NewConfig() (cnf *Config, e error) {
-	var cfg Config
-
-	if err := configor.Load(&cfg, "config.yml"); err != nil {
+// GetFirebaseMessagingToken fetches choice(like, dislikes are only in DB) from cache.
+func (c *Cache) GetFirebaseMessagingToken(key string) (*model.FirebaseMessagingToken, error) {
+	res, err := c.Redis.Get(key).Result()
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
-	return &cfg, nil
+	if len(res) == 0 {
+		return nil, nil
+	}
+
+	var token model.FirebaseMessagingToken
+
+	if err := token.UnmarshalBinary([]byte(res)); err != nil {
+		return nil, err
+	}
+
+	return &token, nil
 }

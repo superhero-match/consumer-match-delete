@@ -11,27 +11,12 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package config
+package model
 
-import (
-	"github.com/jinzhu/configor"
-)
-
-// Config holds the configuration.
-type Config struct {
-	Consumer *Consumer
-	Cache    *Cache
-	Firebase *Firebase
-	DB       *DB
-}
-
-// NewConfig returns the configuration.
-func NewConfig() (cnf *Config, e error) {
-	var cfg Config
-
-	if err := configor.Load(&cfg, "config.yml"); err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+// Request holds new match request body data that is going to be sent to Firebase.
+// This request will trigger Firebase function that will notify the matched user that
+// they got new match.
+type Request struct {
+	Token       string `json:"token"`
+	SuperheroID string `json:"superheroId"`
 }

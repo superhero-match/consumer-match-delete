@@ -15,6 +15,7 @@ package model
 
 // Match holds all the id of the match between two Superheros.
 type Match struct {
-	ID        string `json:"id"`
-	DeletedAt string `json:"deleted_at"`
+	SuperheroID        string `json:"superhero_id"`
+	MatchedSuperheroID string `json:"matched_superhero_id"`
+	DeletedAt          string `json:"deleted_at"`
 }

@@ -11,42 +11,40 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package reader
+package cache
 
 import (
-	"github.com/superhero-match/consumer-match-delete/internal/cache"
+	"fmt"
+
+	"github.com/go-redis/redis"
+
 	"github.com/superhero-match/consumer-match-delete/internal/config"
-	"github.com/superhero-match/consumer-match-delete/internal/consumer"
-	"github.com/superhero-match/consumer-match-delete/internal/db"
-	"github.com/superhero-match/consumer-match-delete/internal/firebase"
 )
 
-// Reader holds all the data relevant.
-type Reader struct {
-	DB       *db.DB
-	Cache    *cache.Cache
-	Firebase *firebase.Firebase
-	Consumer *consumer.Consumer
+// Cache is the Redis client.
+type Cache struct {
+	Redis          *redis.Client
+	TokenKeyFormat string
 }
 
-// NewReader configures Reader.
-func NewReader(cfg *config.Config) (r *Reader, err error) {
-	dbs, err := db.NewDB(cfg)
+// NewCache creates a client connection to Redis.
+func NewCache(cfg *config.Config) (cache *Cache, err error) {
+	client := redis.NewClient(&redis.Options{
+		Addr:         fmt.Sprintf("%s%s", cfg.Cache.Address, cfg.Cache.Port),
+		Password:     cfg.Cache.Password,
+		DB:           cfg.Cache.DB,
+		PoolSize:     cfg.Cache.PoolSize,
+		MinIdleConns: cfg.Cache.MinimumIdleConnections,
+		MaxRetries:   cfg.Cache.MaximumRetries,
+	})
+
+	_, err = client.Ping().Result()
 	if err != nil {
 		return nil, err
 	}
 
-	ch, err := cache.NewCache(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	cs := consumer.NewConsumer(cfg)
-
-	return &Reader{
-		DB:       dbs,
-		Cache:    ch,
-		Firebase: firebase.NewFirebase(cfg),
-		Consumer: cs,
+	return &Cache{
+		Redis:          client,
+		TokenKeyFormat: cfg.Cache.TokenKeyFormat,
 	}, nil
 }

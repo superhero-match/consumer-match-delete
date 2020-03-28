@@ -11,27 +11,24 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package config
+package model
 
-import (
-	"github.com/jinzhu/configor"
-)
+import "encoding/json"
 
-// Config holds the configuration.
-type Config struct {
-	Consumer *Consumer
-	Cache    *Cache
-	Firebase *Firebase
-	DB       *DB
+// FirebaseMessagingToken holds data related to Firebase high priority messaging token.
+// This token is used when pushing notifications to clients.
+type FirebaseMessagingToken struct {
+	Token       string `json:"token"`
+	SuperheroID string `json:"superheroID"`
+	UpdatedAt   string `json:"updatedAt"`
 }
 
-// NewConfig returns the configuration.
-func NewConfig() (cnf *Config, e error) {
-	var cfg Config
+// MarshalBinary ...
+func (f FirebaseMessagingToken) MarshalBinary() ([]byte, error) {
+	return json.Marshal(f)
+}
 
-	if err := configor.Load(&cfg, "config.yml"); err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+// UnmarshalBinary ...
+func (f *FirebaseMessagingToken) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, &f)
 }

@@ -13,25 +13,8 @@
 */
 package config
 
-import (
-	"github.com/jinzhu/configor"
-)
-
-// Config holds the configuration.
-type Config struct {
-	Consumer *Consumer
-	Cache    *Cache
-	Firebase *Firebase
-	DB       *DB
-}
-
-// NewConfig returns the configuration.
-func NewConfig() (cnf *Config, e error) {
-	var cfg Config
-
-	if err := configor.Load(&cfg, "config.yml"); err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+// Firebase holds all the Firebase related data.
+type Firebase struct {
+	FunctionAddress string `env:"FIREBASE_DELETE_MATCH_FUNCTION_ADDRESS" default:"https://us-central1-superheromatch.cloudfunctions.net/deleteMatch"`
+	ContentType     string `env:"FIREBASE_DELETE_MATCH_CONTENT_TYPE" default:"application/json"`
 }

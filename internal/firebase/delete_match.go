@@ -11,47 +11,39 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-package db
+package firebase
 
 import (
-	"database/sql"
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 
-	"github.com/superhero-match/consumer-match-delete/internal/config"
-
-	_ "github.com/go-sql-driver/mysql" // MySQL driver.
+	"github.com/superhero-match/consumer-match-delete/internal/firebase/model"
 )
 
-// DB holds the database connection.
-type DB struct {
-	DB              *sql.DB
-	stmtDeleteMatch *sql.Stmt
-}
+// PushDeleteMatchNotification pushes delete match notification to Firebase.
+func (f *Firebase) PushDeleteMatchNotification(req model.Request) error {
+	requestBody, err := json.Marshal(map[string]string{
+		"token":       req.Token,
+		"superheroId": req.SuperheroID,
+	})
+	if err != nil {
+		return err
+	}
 
-// NewDB returns database.
-func NewDB(cfg *config.Config) (dbs *DB, err error) {
-	db, err := sql.Open(
-		"mysql",
-		fmt.Sprintf(
-			"%s:%s@tcp(%s:%d)/%s",
-			cfg.DB.User,
-			cfg.DB.Password,
-			cfg.DB.Host,
-			cfg.DB.Port,
-			cfg.DB.Name,
-		),
+	resp, err := http.Post(
+		f.FunctionAddress,
+		f.ContentType,
+		bytes.NewBuffer(requestBody),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	stmtDel, err := db.Prepare(`call delete_match(?,?,?)`)
-	if err != nil {
-		return nil, err
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("firebase request returned status: %d", resp.StatusCode)
 	}
 
-	return &DB{
-		DB:              db,
-		stmtDeleteMatch: stmtDel,
-	}, nil
+	return nil
 }
