@@ -17,15 +17,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"time"
 
 	"github.com/superhero-match/consumer-match-delete/internal/consumer/model"
 	dbm "github.com/superhero-match/consumer-match-delete/internal/db/model"
 	fm "github.com/superhero-match/consumer-match-delete/internal/firebase/model"
-)
-
-const (
-	timeFormat = "2006-01-02T15:04:05"
 )
 
 // Read consumes the Kafka topic and stores the choice made by superhero
@@ -37,11 +34,21 @@ func (r *Reader) Read() error {
 		fmt.Println("before FetchMessage")
 		m, err := r.Consumer.Consumer.FetchMessage(ctx)
 		fmt.Println("after FetchMessage")
-		fmt.Println("err: ")
-		fmt.Println(err)
 		if err != nil {
+			r.Logger.Error(
+				"failed to fetch message",
+				zap.String("err", err.Error()),
+				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+			)
+
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
+				r.Logger.Error(
+					"failed to close consumer",
+					zap.String("err", err.Error()),
+					zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+				)
+
 				return err
 			}
 
@@ -62,10 +69,20 @@ func (r *Reader) Read() error {
 		if err := json.Unmarshal(m.Value, &match); err != nil {
 			_ = r.Consumer.Consumer.Close()
 			if err != nil {
-				fmt.Println("Unmarshal")
-				fmt.Println(err)
+				r.Logger.Error(
+					"failed to unmarshal JSON to Match consumer model",
+					zap.String("err", err.Error()),
+					zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+				)
+
 				err = r.Consumer.Consumer.Close()
 				if err != nil {
+					r.Logger.Error(
+						"failed to close consumer",
+						zap.String("err", err.Error()),
+						zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+					)
+
 					return err
 				}
 
@@ -79,10 +96,20 @@ func (r *Reader) Read() error {
 			DeletedAt:          time.Now().UTC().Format(timeFormat),
 		}, )
 		if err != nil {
-			fmt.Println("DB")
-			fmt.Println(err)
+			r.Logger.Error(
+				"failed to delete match from database",
+				zap.String("err", err.Error()),
+				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+			)
+
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
+				r.Logger.Error(
+					"failed to close consumer",
+					zap.String("err", err.Error()),
+					zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+				)
+
 				return err
 			}
 
@@ -91,12 +118,20 @@ func (r *Reader) Read() error {
 
 		token, err := r.Cache.GetFirebaseMessagingToken(fmt.Sprintf(r.Cache.TokenKeyFormat, match.MatchedSuperheroID))
 		if err != nil || token == nil {
-			fmt.Println("r.Cache.GetFirebaseMessagingToken")
-			fmt.Println(err)
-			fmt.Println(token)
+			r.Logger.Error(
+				"failed to fetch Firebase token from cache",
+				zap.String("err", err.Error()),
+				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+			)
 
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
+				r.Logger.Error(
+					"failed to close consumer",
+					zap.String("err", err.Error()),
+					zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+				)
+
 				return err
 			}
 
@@ -108,11 +143,20 @@ func (r *Reader) Read() error {
 			SuperheroID: match.SuperheroID,
 		})
 		if err != nil {
-			fmt.Println("r.Firebase.PushNewMatchNotification")
-			fmt.Println(err)
+			r.Logger.Error(
+				"failed to push Firebase notification to delete match",
+				zap.String("err", err.Error()),
+				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+			)
 
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
+				r.Logger.Error(
+					"failed to close consumer",
+					zap.String("err", err.Error()),
+					zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+				)
+
 				return err
 			}
 
@@ -121,8 +165,20 @@ func (r *Reader) Read() error {
 
 		err = r.Consumer.Consumer.CommitMessages(ctx, m)
 		if err != nil {
+			r.Logger.Error(
+				"failed to commit message",
+				zap.String("err", err.Error()),
+				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+			)
+			
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
+				r.Logger.Error(
+					"failed to close consumer",
+					zap.String("err", err.Error()),
+					zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
+				)
+
 				return err
 			}
 
