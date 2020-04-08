@@ -13,7 +13,7 @@ dkb:
 	docker build -t consumer-match-delete .
 
 dkr:
-	docker run consumer-match-delete
+	docker run -p "8030:8030" consumer-match-delete
 
 launch: dkb dkr
 

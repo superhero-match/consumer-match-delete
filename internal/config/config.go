@@ -23,6 +23,7 @@ type Config struct {
 	Cache    *Cache
 	Firebase *Firebase
 	DB       *DB
+	Health   *Health
 }
 
 // NewConfig returns the configuration.

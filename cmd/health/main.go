@@ -14,9 +14,8 @@
 package main
 
 import (
-	"github.com/superhero-match/consumer-match-delete/cmd/consumer/reader"
+	"github.com/superhero-match/consumer-match-delete/cmd/health/controller"
 	"github.com/superhero-match/consumer-match-delete/internal/config"
-	"github.com/superhero-match/consumer-match-delete/internal/health"
 )
 
 func main() {
@@ -25,21 +24,15 @@ func main() {
 		panic(err)
 	}
 
-	client := health.NewClient(cfg)
-
-	r, err := reader.NewReader(cfg)
+	ctrl, err := controller.NewController()
 	if err != nil {
-		_ = client.ShutdownHealthServer()
-
 		panic(err)
 	}
 
-	err = r.Read()
-	if err != nil {
-		_ = client.ShutdownHealthServer()
+	r := ctrl.RegisterRoutes()
 
+	err = r.Run(cfg.Health.Port)
+	if err != nil {
 		panic(err)
 	}
-
-	_ = client.ShutdownHealthServer()
 }
