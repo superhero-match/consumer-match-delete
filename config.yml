@@ -1,12 +1,12 @@
 db:
-  host: '192.168.0.101'
+  host: '192.168.0.64'
   port: 3306
   user: 'dev'
-  password: 'password'
+  password: 'Awesome85**'
   name: 'match'
 
 cache:
-  address: '192.168.0.105'
+  address: '192.168.0.64'
   port: ':6379'
   password: 'Awesome85**'
   db: 0
@@ -16,9 +16,9 @@ cache:
   token_key_format: 'token.%s'
 
 consumer:
-  brokers: ['192.168.0.105:9092']
+  brokers: ['192.168.0.64:9092']
   topic: 'delete.match.match'
-  group_id: 'consumer-delete-match-group'
+  group_id: 'consumer.delete.match.group'
 
 firebase:
   function_address: 'https://us-central1-superheromatch.cloudfunctions.net/deleteMatch'
