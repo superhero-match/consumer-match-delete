@@ -14,6 +14,7 @@
 package consumer
 
 import (
+	"context"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -21,22 +22,29 @@ import (
 	"github.com/superhero-match/consumer-match-delete/internal/config"
 )
 
-// Consumer holds Kafka consumer related data.
-type Consumer struct {
+// Consumer interface defines consumer methods.
+type Consumer interface {
+	FetchMessage(ctx context.Context) (kafka.Message, error)
+	Close() error
+	CommitMessages(ctx context.Context, m kafka.Message) error
+}
+
+// consumer holds Kafka consumer related data.
+type consumer struct {
 	Consumer *kafka.Reader
 }
 
 // NewConsumer configures Kafka consumer that consumes from configured topic.
-func NewConsumer(cfg *config.Config) *Consumer {
+func NewConsumer(cfg *config.Config) (Consumer, error) {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:       cfg.Consumer.Brokers,
 		Topic:         cfg.Consumer.Topic,
 		GroupID:       cfg.Consumer.GroupID,
-		QueueCapacity: int(10),
+		QueueCapacity: int(1),
 		MaxWait:       time.Second,
 	})
 
-	return &Consumer{
+	return &consumer{
 		Consumer: r,
-	}
+	}, nil
 }
