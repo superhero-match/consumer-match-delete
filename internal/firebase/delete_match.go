@@ -23,7 +23,7 @@ import (
 )
 
 // PushDeleteMatchNotification pushes delete match notification to Firebase.
-func (f *Firebase) PushDeleteMatchNotification(req model.Request) error {
+func (f *firebase) PushDeleteMatchNotification(req model.Request) error {
 	requestBody, err := json.Marshal(map[string]string{
 		"token":       req.Token,
 		"superheroId": req.SuperheroID,
