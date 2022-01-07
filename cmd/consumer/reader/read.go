@@ -33,7 +33,7 @@ func (r *reader) Read() error {
 
 	for {
 		fmt.Println("before FetchMessage")
-		m, err := r.Consumer.Consumer.FetchMessage(ctx)
+		m, err := r.Consumer.FetchMessage(ctx)
 		fmt.Println("after FetchMessage")
 		if err != nil {
 			r.Logger.Error(
@@ -42,7 +42,7 @@ func (r *reader) Read() error {
 				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
 			)
 
-			err = r.Consumer.Consumer.Close()
+			err = r.Consumer.Close()
 			if err != nil {
 				r.Logger.Error(
 					"failed to close consumer",
@@ -68,7 +68,7 @@ func (r *reader) Read() error {
 		var match model.Match
 
 		if err := json.Unmarshal(m.Value, &match); err != nil {
-			_ = r.Consumer.Consumer.Close()
+			_ = r.Consumer.Close()
 			if err != nil {
 				r.Logger.Error(
 					"failed to unmarshal JSON to Match consumer model",
@@ -76,7 +76,7 @@ func (r *reader) Read() error {
 					zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
 				)
 
-				err = r.Consumer.Consumer.Close()
+				err = r.Consumer.Close()
 				if err != nil {
 					r.Logger.Error(
 						"failed to close consumer",
@@ -103,7 +103,7 @@ func (r *reader) Read() error {
 				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
 			)
 
-			err = r.Consumer.Consumer.Close()
+			err = r.Consumer.Close()
 			if err != nil {
 				r.Logger.Error(
 					"failed to close consumer",
@@ -125,7 +125,7 @@ func (r *reader) Read() error {
 				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
 			)
 
-			err = r.Consumer.Consumer.Close()
+			err = r.Consumer.Close()
 			if err != nil {
 				r.Logger.Error(
 					"failed to close consumer",
@@ -150,7 +150,7 @@ func (r *reader) Read() error {
 				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
 			)
 
-			err = r.Consumer.Consumer.Close()
+			err = r.Consumer.Close()
 			if err != nil {
 				r.Logger.Error(
 					"failed to close consumer",
@@ -164,7 +164,7 @@ func (r *reader) Read() error {
 			return err
 		}
 
-		err = r.Consumer.Consumer.CommitMessages(ctx, m)
+		err = r.Consumer.CommitMessages(ctx, m)
 		if err != nil {
 			r.Logger.Error(
 				"failed to commit message",
@@ -172,7 +172,7 @@ func (r *reader) Read() error {
 				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
 			)
 
-			err = r.Consumer.Consumer.Close()
+			err = r.Consumer.Close()
 			if err != nil {
 				r.Logger.Error(
 					"failed to close consumer",
