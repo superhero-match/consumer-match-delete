@@ -17,20 +17,26 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/superhero-match/consumer-match-delete/internal/config"
-
 	_ "github.com/go-sql-driver/mysql" // MySQL driver.
+
+	"github.com/superhero-match/consumer-match-delete/internal/config"
+	"github.com/superhero-match/consumer-match-delete/internal/db/model"
 )
 
-// DB holds the database connection.
-type DB struct {
+// DB interface defines database methods.
+type DB interface {
+	DeleteMatch(m model.Match) error
+}
+
+// db holds the database connection.
+type db struct {
 	DB              *sql.DB
 	stmtDeleteMatch *sql.Stmt
 }
 
 // NewDB returns database.
-func NewDB(cfg *config.Config) (dbs *DB, err error) {
-	db, err := sql.Open(
+func NewDB(cfg *config.Config) (dbs DB, err error) {
+	ds, err := sql.Open(
 		"mysql",
 		fmt.Sprintf(
 			"%s:%s@tcp(%s:%d)/%s",
@@ -45,13 +51,13 @@ func NewDB(cfg *config.Config) (dbs *DB, err error) {
 		return nil, err
 	}
 
-	stmtDel, err := db.Prepare(`call delete_match(?,?,?)`)
+	stmtDel, err := ds.Prepare(`call delete_match(?,?,?)`)
 	if err != nil {
 		return nil, err
 	}
 
-	return &DB{
-		DB:              db,
+	return &db{
+		DB:              ds,
 		stmtDeleteMatch: stmtDel,
 	}, nil
 }
