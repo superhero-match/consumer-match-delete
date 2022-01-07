@@ -25,18 +25,24 @@ import (
 
 const timeFormat = "2006-01-02T15:04:05"
 
-// Reader holds all the data relevant.
-type Reader struct {
-	DB         *db.DB
-	Cache      *cache.Cache
-	Firebase   *firebase.Firebase
-	Consumer   *consumer.Consumer
-	Logger     *zap.Logger
-	TimeFormat string
+// Reader interface defines reader method.
+type Reader interface {
+	Read() error
+}
+
+// reader holds all the data relevant.
+type reader struct {
+	DB             db.DB
+	Cache          cache.Cache
+	Firebase       firebase.Firebase
+	Consumer       *consumer.Consumer
+	Logger         *zap.Logger
+	TimeFormat     string
+	TokenKeyFormat string
 }
 
 // NewReader configures Reader.
-func NewReader(cfg *config.Config) (r *Reader, err error) {
+func NewReader(cfg *config.Config) (r Reader, err error) {
 	dbs, err := db.NewDB(cfg)
 	if err != nil {
 		return nil, err
@@ -56,12 +62,13 @@ func NewReader(cfg *config.Config) (r *Reader, err error) {
 
 	defer logger.Sync()
 
-	return &Reader{
-		DB:         dbs,
-		Cache:      ch,
-		Firebase:   firebase.NewFirebase(cfg),
-		Consumer:   cs,
-		Logger:     logger,
-		TimeFormat: timeFormat,
+	return &reader{
+		DB:             dbs,
+		Cache:          ch,
+		Firebase:       firebase.NewFirebase(cfg),
+		Consumer:       cs,
+		Logger:         logger,
+		TimeFormat:     timeFormat,
+		TokenKeyFormat: cfg.Cache.TokenKeyFormat,
 	}, nil
 }

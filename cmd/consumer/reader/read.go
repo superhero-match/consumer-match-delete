@@ -17,17 +17,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/superhero-match/consumer-match-delete/internal/consumer/model"
 	dbm "github.com/superhero-match/consumer-match-delete/internal/db/model"
 	fm "github.com/superhero-match/consumer-match-delete/internal/firebase/model"
 )
 
-// Read consumes the Kafka topic and stores the choice made by superhero
-// to DB and if it is a like to Cache as well.
-func (r *Reader) Read() error {
+// Read consumes the Kafka topic, deletes specified match from database and
+// pushes notification about it to Firebase.
+func (r *reader) Read() error {
 	ctx := context.Background()
 
 	for {
@@ -94,7 +95,7 @@ func (r *Reader) Read() error {
 			SuperheroID:        match.SuperheroID,
 			MatchedSuperheroID: match.MatchedSuperheroID,
 			DeletedAt:          time.Now().UTC().Format(timeFormat),
-		}, )
+		})
 		if err != nil {
 			r.Logger.Error(
 				"failed to delete match from database",
@@ -116,7 +117,7 @@ func (r *Reader) Read() error {
 			return err
 		}
 
-		token, err := r.Cache.GetFirebaseMessagingToken(fmt.Sprintf(r.Cache.TokenKeyFormat, match.MatchedSuperheroID))
+		token, err := r.Cache.GetFirebaseMessagingToken(fmt.Sprintf(r.TokenKeyFormat, match.MatchedSuperheroID))
 		if err != nil || token == nil {
 			r.Logger.Error(
 				"failed to fetch Firebase token from cache",
@@ -170,7 +171,7 @@ func (r *Reader) Read() error {
 				zap.String("err", err.Error()),
 				zap.String("time", time.Now().UTC().Format(r.TimeFormat)),
 			)
-			
+
 			err = r.Consumer.Consumer.Close()
 			if err != nil {
 				r.Logger.Error(
